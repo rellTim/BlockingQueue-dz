@@ -17,9 +17,9 @@ public class Main {
     static String C;
 
     public static void main(String[] args) throws InterruptedException {
-        new Thread(() -> {
-            for (int i = 0; i < 100_000; i++) {
-                String str = generateText("abc", 10000);
+        for (int i = 0; i < 100_0; i++) {
+            new Thread(() -> {
+                String str = generateText("abc", 1000);
                 try {
                     blockingQueueA.put(str);
                     blockingQueueB.put(str);
@@ -27,61 +27,57 @@ public class Main {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-            }
-        }).start();
-
-
-        Runnable runnableA = () -> {
-            try {
-                String str = blockingQueueA.take();
-                long count = str.chars().filter(ch -> ch == 'a').count();
-                if (count > maxCountA) {
-                    A = str;
-                    maxCountA = (int) count;
+            }).start();
+            Runnable runnableA = () -> {
+                try {
+                    String str = blockingQueueA.take();
+                    long count = str.chars().filter(ch -> ch == 'a').count();
+                    if (count > maxCountA) {
+                        A = str;
+                        maxCountA = (int) count;
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        };
+            };
 
-        Thread threadA = new Thread(runnableA);
-        threadList.add(threadA);
-        threadA.start();
+            Thread threadA = new Thread(runnableA);
+            threadList.add(threadA);
+            threadA.start();
 
-        Runnable runnableB = () -> {
-            try {
-                String str = blockingQueueB.take();
-                long count = str.chars().filter(ch -> ch == 'b').count();
-                if (count > maxCountB) {
-                    B = str;
-                    maxCountB = (int) count;
+            Runnable runnableB = () -> {
+                try {
+                    String str = blockingQueueB.take();
+                    long count = str.chars().filter(ch -> ch == 'b').count();
+                    if (count > maxCountB) {
+                        B = str;
+                        maxCountB = (int) count;
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        };
+            };
 
-        Thread threadB = new Thread(runnableB);
-        threadList.add(threadB);
-        threadB.start();
+            Thread threadB = new Thread(runnableB);
+            threadList.add(threadB);
+            threadB.start();
 
-        Runnable runnableC = () -> {
-            try {
-                String str = blockingQueueC.take();
-                long count = str.chars().filter(ch -> ch == 'c').count();
-                if (count > maxCountC) {
-                    C = str;
-                    maxCountC = (int) count;
+            Runnable runnableC = () -> {
+                try {
+                    String str = blockingQueueC.take();
+                    long count = str.chars().filter(ch -> ch == 'c').count();
+                    if (count > maxCountC) {
+                        C = str;
+                        maxCountC = (int) count;
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        };
-
-        Thread threadC = new Thread(runnableC);
-        threadList.add(threadC);
-        threadC.start();
-
+            };
+            Thread threadC = new Thread(runnableC);
+            threadList.add(threadC);
+            threadC.start();
+        }
         for (Thread thread : threadList) {
             thread.join();
         }
