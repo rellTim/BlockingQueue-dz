@@ -7,29 +7,32 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Main {
-    static BlockingQueue<String> blockingQueueA = new ArrayBlockingQueue<>(100);
-    static BlockingQueue<String> blockingQueueB = new ArrayBlockingQueue<>(100);
-    static BlockingQueue<String> blockingQueueC = new ArrayBlockingQueue<>(100);
-    static List<Thread> threadList = new ArrayList<>();
-    static int maxCount;
-    static String name;
+    private static BlockingQueue<String> blockingQueueA = new ArrayBlockingQueue<>(100);
+    private static BlockingQueue<String> blockingQueueB = new ArrayBlockingQueue<>(100);
+    private static BlockingQueue<String> blockingQueueC = new ArrayBlockingQueue<>(100);
+    private static final int NUMBER = 1000;
 
     protected static void thread(BlockingQueue<String> blockingQueue, char charName) {
         Runnable runnable = () -> {
             try {
-                String str = blockingQueue.take();
-                int count = (int) str.chars().filter(ch -> ch == charName).count();
-                if (count > maxCount) {
-                    name = str;
-                    maxCount = count;
+                int maxCount = 0;
+                String name = null;
+                for (int i = 0; i < NUMBER; i++) {
+                    String str = blockingQueue.take();
+                    int count = (int) str.chars().filter(ch -> ch == charName).count();
+                    if (count > maxCount) {
+                        name = str;
+                        maxCount = count;
+                    }
                 }
+                System.out.println(maxCount);
+                System.out.println(name);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         };
 
         Thread thread = new Thread(runnable);
-        threadList.add(thread);
         thread.start();
     }
 
@@ -44,8 +47,8 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         new Thread(() -> {
-            String str = generateText("abc", 1000);
-            for (int i = 0; i < 1000; i++) {
+            for (int i = 0; i < NUMBER; i++) {
+                String str = generateText("abc", 1000);
                 try {
                     blockingQueueA.put(str);
                     blockingQueueB.put(str);
@@ -55,15 +58,8 @@ public class Main {
                 }
             }
         }).start();
-
         thread(blockingQueueA, 'a');
         thread(blockingQueueB, 'b');
         thread(blockingQueueC, 'c');
-
-        for (Thread thread : threadList) {
-            thread.join();
-        }
-        System.out.println(maxCount);
-        System.out.println(name);
     }
 }
